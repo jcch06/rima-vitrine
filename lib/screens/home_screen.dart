@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:math' as math;
 import '../config/site_config.dart';
 import '../widgets/navbar.dart';
 import '../widgets/footer.dart';
+import '../widgets/events_section.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,9 +13,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _fadeController;
-  late AnimationController _floatController;
   late Animation<double> _fadeAnimation;
 
   @override
@@ -25,10 +24,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    _floatController = AnimationController(
-      duration: const Duration(seconds: 4),
-      vsync: this,
-    )..repeat(reverse: true);
 
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
@@ -41,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _fadeController.dispose();
-    _floatController.dispose();
     super.dispose();
   }
 
@@ -60,6 +54,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // Section Bienvenue
             _buildWelcomeSection(isDesktop),
 
+            // Section Événements (auto-masquée si aucun événement)
+            const EventsSection(),
+
             // Section Valeurs
             _buildValuesSection(isDesktop),
 
@@ -74,9 +71,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildHeroSection(bool isDesktop, double screenHeight) {
+    // Minimum height pour éviter l'écrasement sur petits écrans
+    final heroHeight = screenHeight * 0.95 < 600 ? 600.0 : screenHeight * 0.95;
     return Container(
       width: double.infinity,
-      height: screenHeight * 0.95,
+      height: heroHeight,
       child: Stack(
         children: [
           // Fond avec dégradé méditerranéen
@@ -104,31 +103,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
 
-          // Cercles décoratifs flottants
-          AnimatedBuilder(
-            animation: _floatController,
-            builder: (context, child) {
-              final offset = math.sin(_floatController.value * math.pi) * 20;
-              return Stack(
-                children: [
-                  Positioned(
-                    right: isDesktop ? 100 : 20,
-                    top: 150 + offset,
-                    child: _buildFloatingCircle(180, SiteConfig.goldAccent.withOpacity(0.1)),
-                  ),
-                  Positioned(
-                    left: isDesktop ? 80 : -50,
-                    bottom: 200 - offset,
-                    child: _buildFloatingCircle(120, SiteConfig.accentColor.withOpacity(0.08)),
-                  ),
-                  Positioned(
-                    right: isDesktop ? 300 : 100,
-                    bottom: 100 + offset * 0.5,
-                    child: _buildFloatingCircle(80, Colors.white.withOpacity(0.05)),
-                  ),
-                ],
-              );
-            },
+          // Cercles décoratifs (statiques pour éviter les erreurs Flutter Web)
+          Positioned(
+            right: isDesktop ? 100 : 20,
+            top: 150,
+            child: _buildFloatingCircle(180, SiteConfig.goldAccent.withOpacity(0.1)),
+          ),
+          Positioned(
+            left: isDesktop ? 80 : -50,
+            bottom: 200,
+            child: _buildFloatingCircle(120, SiteConfig.accentColor.withOpacity(0.08)),
+          ),
+          Positioned(
+            right: isDesktop ? 300 : 100,
+            bottom: 100,
+            child: _buildFloatingCircle(80, Colors.white.withOpacity(0.05)),
           ),
 
           // Contenu principal
@@ -250,7 +239,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 _HeroButton(
                                   label: 'Découvrir nos produits',
                                   primary: true,
-                                  onTap: () => launchUrl(Uri.parse(SiteConfig.storeUrl)),
+                                  onTap: () => launchUrl(
+                                    Uri.parse(SiteConfig.storeUrl),
+                                    webOnlyWindowName: '_self',
+                                  ),
                                 ),
                                 _HeroButton(
                                   label: 'Notre histoire',
@@ -281,19 +273,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      AnimatedBuilder(
-                        animation: _floatController,
-                        builder: (context, child) {
-                          final bounce = math.sin(_floatController.value * math.pi * 2) * 4;
-                          return Transform.translate(
-                            offset: Offset(0, bounce),
-                            child: Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: Colors.white54,
-                              size: 28,
-                            ),
-                          );
-                        },
+                      const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: Colors.white54,
+                        size: 28,
                       ),
                     ],
                   ),
@@ -339,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Text(
             'Les saveurs du Levant\nà votre table',
             style: GoogleFonts.cormorantGaramond(
-              fontSize: isDesktop ? 48 : 36,
+              fontSize: isDesktop ? 48 : 32,
               fontWeight: FontWeight.w500,
               color: SiteConfig.textColor,
               height: 1.2,
@@ -423,10 +406,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Text(
             'Ce qui nous anime',
             style: GoogleFonts.cormorantGaramond(
-              fontSize: isDesktop ? 42 : 32,
+              fontSize: isDesktop ? 42 : 28,
               fontWeight: FontWeight.w500,
               color: SiteConfig.textColor,
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 60),
           Wrap(
@@ -493,10 +477,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Text(
             'Prêt à voyager ?',
             style: GoogleFonts.cormorantGaramond(
-              fontSize: isDesktop ? 42 : 32,
+              fontSize: isDesktop ? 42 : 28,
               fontWeight: FontWeight.w500,
               color: SiteConfig.textColor,
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Container(
@@ -515,7 +500,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _HeroButton(
             label: 'Visiter la boutique',
             primary: true,
-            onTap: () => launchUrl(Uri.parse(SiteConfig.storeUrl)),
+            onTap: () => launchUrl(
+              Uri.parse(SiteConfig.storeUrl),
+              webOnlyWindowName: '_self',
+            ),
             dark: true,
           ),
         ],
@@ -612,64 +600,50 @@ class _ProductHighlight extends StatefulWidget {
 }
 
 class _ProductHighlightState extends State<_ProductHighlight> {
-  bool _isHovered = false;
-
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: widget.isDesktop ? 200 : 150,
-        padding: EdgeInsets.all(widget.isDesktop ? 28 : 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: SiteConfig.primaryColor.withOpacity(_isHovered ? 0.12 : 0.06),
-              blurRadius: _isHovered ? 30 : 20,
-              offset: Offset(0, _isHovered ? 12 : 8),
-            ),
-          ],
-          border: Border.all(
-            color: _isHovered
-                ? SiteConfig.primaryColor.withOpacity(0.2)
-                : Colors.transparent,
+    return Container(
+      width: widget.isDesktop ? 200 : 150,
+      padding: EdgeInsets.all(widget.isDesktop ? 28 : 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: SiteConfig.primaryColor.withOpacity(0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-        ),
-        transform: Matrix4.identity()..translate(0.0, _isHovered ? -4.0 : 0.0),
-        child: Column(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              transform: Matrix4.identity()..scale(_isHovered ? 1.1 : 1.0),
-              child: Text(
-                widget.emoji,
-                style: TextStyle(fontSize: widget.isDesktop ? 48 : 36),
-              ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            widget.emoji,
+            style: TextStyle(fontSize: widget.isDesktop ? 48 : 36),
+          ),
+          SizedBox(height: widget.isDesktop ? 20 : 14),
+          Text(
+            widget.title,
+            style: GoogleFonts.cormorantGaramond(
+              fontSize: widget.isDesktop ? 22 : 18,
+              fontWeight: FontWeight.w600,
+              color: SiteConfig.textColor,
             ),
-            SizedBox(height: widget.isDesktop ? 20 : 14),
-            Text(
-              widget.title,
-              style: GoogleFonts.cormorantGaramond(
-                fontSize: widget.isDesktop ? 22 : 18,
-                fontWeight: FontWeight.w600,
-                color: SiteConfig.textColor,
-              ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            widget.subtitle,
+            style: GoogleFonts.sourceSans3(
+              fontSize: 13,
+              color: SiteConfig.textLight,
             ),
-            const SizedBox(height: 6),
-            Text(
-              widget.subtitle,
-              style: GoogleFonts.sourceSans3(
-                fontSize: 13,
-                color: SiteConfig.textLight,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -702,7 +676,7 @@ class _ValueCardState extends State<_ValueCard> {
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        width: widget.isDesktop ? 300 : double.infinity,
+        width: widget.isDesktop ? 300 : 280,
         padding: const EdgeInsets.all(36),
         decoration: BoxDecoration(
           color: Colors.white,

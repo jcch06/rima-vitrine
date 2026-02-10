@@ -9,6 +9,7 @@ import 'screens/about_screen.dart';
 import 'screens/blog_screen.dart';
 import 'screens/blog_post_screen.dart';
 import 'screens/contact_screen.dart';
+import 'screens/event_detail_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,10 @@ final _router = GoRouter(
     GoRoute(
       path: '/blog/:slug',
       builder: (_, state) => BlogPostScreen(slug: state.pathParameters['slug']!),
+    ),
+    GoRoute(
+      path: '/evenements/:id',
+      builder: (_, state) => EventDetailScreen(eventId: state.pathParameters['id']!),
     ),
     GoRoute(path: '/contact', builder: (_, __) => const ContactScreen()),
   ],
