@@ -94,6 +94,16 @@ class _NavbarState extends State<Navbar> {
               transparent: widget.transparent,
             ),
             _NavLink(
+              label: 'Recettes',
+              path: '/recettes',
+              transparent: widget.transparent,
+            ),
+            _NavLink(
+              label: 'Événements',
+              path: '/evenements',
+              transparent: widget.transparent,
+            ),
+            _NavLink(
               label: 'Contact',
               path: '/contact',
               transparent: widget.transparent,
@@ -326,11 +336,27 @@ class _MobileMenuButton extends StatelessWidget {
               },
             ),
             _MobileMenuItem(
+              icon: Icons.article_rounded,
+              label: 'Blog',
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/blog');
+              },
+            ),
+            _MobileMenuItem(
               icon: Icons.restaurant_menu_rounded,
               label: 'Carnet de Saveurs',
               onTap: () {
                 Navigator.pop(context);
-                context.go('/blog');
+                context.go('/recettes');
+              },
+            ),
+            _MobileMenuItem(
+              icon: Icons.event_rounded,
+              label: 'Événements',
+              onTap: () {
+                Navigator.pop(context);
+                context.go('/evenements');
               },
             ),
             _MobileMenuItem(

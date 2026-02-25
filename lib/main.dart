@@ -6,10 +6,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/site_config.dart';
 import 'screens/home_screen.dart';
 import 'screens/about_screen.dart';
+import 'screens/articles_screen.dart';
 import 'screens/blog_screen.dart';
 import 'screens/blog_post_screen.dart';
 import 'screens/contact_screen.dart';
 import 'screens/event_detail_screen.dart';
+import 'screens/events_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,11 +28,13 @@ final _router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (_, __) => const HomeScreen()),
     GoRoute(path: '/notre-histoire', builder: (_, __) => const AboutScreen()),
-    GoRoute(path: '/blog', builder: (_, __) => const BlogScreen()),
+    GoRoute(path: '/blog', builder: (_, __) => const ArticlesScreen()),
     GoRoute(
       path: '/blog/:slug',
       builder: (_, state) => BlogPostScreen(slug: state.pathParameters['slug']!),
     ),
+    GoRoute(path: '/recettes', builder: (_, __) => const BlogScreen()),
+    GoRoute(path: '/evenements', builder: (_, __) => const EventsScreen()),
     GoRoute(
       path: '/evenements/:id',
       builder: (_, state) => EventDetailScreen(eventId: state.pathParameters['id']!),

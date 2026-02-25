@@ -7,14 +7,14 @@ import '../services/supabase_service.dart';
 import '../widgets/navbar.dart';
 import '../widgets/footer.dart';
 
-class BlogScreen extends StatefulWidget {
-  const BlogScreen({super.key});
+class ArticlesScreen extends StatefulWidget {
+  const ArticlesScreen({super.key});
 
   @override
-  State<BlogScreen> createState() => _BlogScreenState();
+  State<ArticlesScreen> createState() => _ArticlesScreenState();
 }
 
-class _BlogScreenState extends State<BlogScreen> {
+class _ArticlesScreenState extends State<ArticlesScreen> {
   List<BlogPost> _posts = [];
   bool _isLoading = true;
 
@@ -26,15 +26,20 @@ class _BlogScreenState extends State<BlogScreen> {
 
   Future<void> _loadPosts() async {
     try {
-      final posts = await SupabaseService.getBlogPostsByCategory('Recette');
+      final allPosts = await SupabaseService.getBlogPosts();
+      final articles = allPosts
+          .where((p) =>
+              p.category == null ||
+              p.category!.toLowerCase() != 'recette')
+          .toList();
       if (mounted) {
         setState(() {
-          _posts = posts;
+          _posts = articles;
           _isLoading = false;
         });
       }
     } catch (e) {
-      debugPrint('[BLOG_SCREEN] Error loading posts: $e');
+      debugPrint('[ARTICLES_SCREEN] Error loading posts: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -50,13 +55,8 @@ class _BlogScreenState extends State<BlogScreen> {
         child: Column(
           children: [
             const Navbar(),
-
-            // Hero Header
             _buildHeader(isDesktop),
-
-            // Posts Grid
             _buildPostsSection(isDesktop),
-
             const Footer(),
           ],
         ),
@@ -87,26 +87,27 @@ class _BlogScreenState extends State<BlogScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: SiteConfig.accentColor.withOpacity(0.1),
+              color: SiteConfig.secondaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(100),
               border: Border.all(
-                color: SiteConfig.accentColor.withOpacity(0.2),
+                color: SiteConfig.secondaryColor.withOpacity(0.2),
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '📖',
-                  style: TextStyle(fontSize: 16),
+                Icon(
+                  Icons.article_outlined,
+                  size: 16,
+                  color: SiteConfig.secondaryColor,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'CARNET DE SAVEURS',
+                  'BLOG',
                   style: GoogleFonts.sourceSans3(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: SiteConfig.accentColor,
+                    color: SiteConfig.secondaryColor,
                     letterSpacing: 2,
                   ),
                 ),
@@ -115,7 +116,7 @@ class _BlogScreenState extends State<BlogScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            SiteConfig.blogTitle,
+            'Notre Blog',
             style: GoogleFonts.cormorantGaramond(
               fontSize: isDesktop ? 52 : 32,
               fontWeight: FontWeight.w500,
@@ -127,7 +128,7 @@ class _BlogScreenState extends State<BlogScreen> {
           Container(
             constraints: const BoxConstraints(maxWidth: 600),
             child: Text(
-              SiteConfig.blogSubtitle,
+              'Actualités, conseils et découvertes autour de la culture libanaise',
               style: GoogleFonts.sourceSans3(
                 fontSize: isDesktop ? 18 : 16,
                 color: SiteConfig.textSecondary,
@@ -172,7 +173,7 @@ class _BlogScreenState extends State<BlogScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Chargement des recettes...',
+              'Chargement des articles...',
               style: GoogleFonts.sourceSans3(
                 fontSize: 16,
                 color: SiteConfig.textLight,
@@ -193,19 +194,20 @@ class _BlogScreenState extends State<BlogScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: SiteConfig.oliveLight,
+              color: SiteConfig.terracottaLight,
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Text(
-                '🍽️',
-                style: TextStyle(fontSize: 48),
+              child: Icon(
+                Icons.article_outlined,
+                size: 48,
+                color: SiteConfig.secondaryColor.withOpacity(0.5),
               ),
             ),
           ),
           const SizedBox(height: 32),
           Text(
-            'Les recettes arrivent bientôt',
+            'Les articles arrivent bientôt',
             style: GoogleFonts.cormorantGaramond(
               fontSize: 28,
               fontWeight: FontWeight.w500,
@@ -214,7 +216,7 @@ class _BlogScreenState extends State<BlogScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Notre carnet de saveurs est en préparation.\nRevenez vite pour découvrir nos recettes !',
+            'Notre blog est en préparation.\nRevenez vite pour découvrir nos articles !',
             style: GoogleFonts.sourceSans3(
               fontSize: 16,
               color: SiteConfig.textSecondary,
@@ -252,7 +254,7 @@ class _BlogScreenState extends State<BlogScreen> {
         childAspectRatio: childAspectRatio,
       ),
       itemCount: _posts.length,
-      itemBuilder: (_, index) => _BlogCard(
+      itemBuilder: (_, index) => _ArticleCard(
         post: _posts[index],
         index: index,
       ),
@@ -260,17 +262,17 @@ class _BlogScreenState extends State<BlogScreen> {
   }
 }
 
-class _BlogCard extends StatefulWidget {
+class _ArticleCard extends StatefulWidget {
   final BlogPost post;
   final int index;
 
-  const _BlogCard({required this.post, required this.index});
+  const _ArticleCard({required this.post, required this.index});
 
   @override
-  State<_BlogCard> createState() => _BlogCardState();
+  State<_ArticleCard> createState() => _ArticleCardState();
 }
 
-class _BlogCardState extends State<_BlogCard> {
+class _ArticleCardState extends State<_ArticleCard> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -371,7 +373,7 @@ class _BlogCardState extends State<_BlogCard> {
                     Row(
                       children: [
                         Text(
-                          'Lire la recette',
+                          'Lire l\'article',
                           style: GoogleFonts.sourceSans3(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -397,13 +399,11 @@ class _BlogCardState extends State<_BlogCard> {
   }
 
   Widget _buildPlaceholder() {
-    // Different placeholder colors based on index
     final colors = [
-      SiteConfig.oliveLight,
       SiteConfig.terracottaLight,
+      SiteConfig.oliveLight,
       SiteConfig.goldAccent.withOpacity(0.2),
     ];
-    final emojis = ['🥗', '🍲', '🥙', '🧆', '🫓', '🍯'];
 
     return Container(
       decoration: BoxDecoration(
@@ -417,9 +417,10 @@ class _BlogCardState extends State<_BlogCard> {
         ),
       ),
       child: Center(
-        child: Text(
-          emojis[widget.index % emojis.length],
-          style: TextStyle(fontSize: 56),
+        child: Icon(
+          Icons.article_outlined,
+          size: 56,
+          color: SiteConfig.secondaryColor.withOpacity(0.3),
         ),
       ),
     );
