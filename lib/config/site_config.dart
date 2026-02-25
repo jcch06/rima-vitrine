@@ -10,7 +10,7 @@ class SiteConfig {
   static const String vendorSlug = 'cedre-gourmet';
 
   // Infos business
-  static const String businessName = 'L\'Escale Libanaise';
+  static const String businessName = 'Escale Libanaise';
   static const String tagline = 'L\'art de vivre libanais, livré chez vous';
   static const String description =
       'Découvrez les trésors culinaires du Liban : huile d\'olive ancestrale, zaatar parfumé, halva artisanal et mille délices authentiques sélectionnés avec passion.';
@@ -61,7 +61,7 @@ class SiteConfig {
   static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNoZ2Jxb3hrbGtjanpuaWllbWtoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1NjcyMzksImV4cCI6MjA3MjE0MzIzOX0.V4wPaYL2f19v-wMRmlrZ9lVp177RIwzEY2YHfI1LzUE';
 
   // SEO
-  static const String siteTitle = 'L\'Escale Libanaise | Épicerie Fine Libanaise Paris';
+  static const String siteTitle = 'Escale Libanaise | Épicerie Fine Libanaise Paris';
   static const String metaDescription =
       'Épicerie fine libanaise à Paris. Huile d\'olive, zaatar, halva, mezzé et produits authentiques du Liban. Livraison à domicile.';
 
@@ -69,7 +69,7 @@ class SiteConfig {
   static const String aboutTitle = 'Notre Histoire';
   static const String aboutSubtitle = 'Un voyage gustatif au cœur du Liban';
   static const String aboutContent = '''
-L'Escale Libanaise est née d'une passion transmise de génération en génération. Notre famille cultive l'olivier depuis plus d'un siècle dans les montagnes du Mont-Liban.
+Escale Libanaise est née d'une passion transmise de génération en génération. Notre famille cultive l'olivier depuis plus d'un siècle dans les montagnes du Mont-Liban.
 
 Chaque produit que nous sélectionnons raconte une histoire : celle des artisans qui perpétuent des savoir-faire millénaires, celle des terroirs généreux qui offrent leurs plus beaux fruits.
 
