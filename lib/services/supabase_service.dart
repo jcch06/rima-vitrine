@@ -98,4 +98,29 @@ class SupabaseService {
         .map((json) => BlogPost.fromJson(json))
         .toList();
   }
+
+  /// Compter le nombre d'inscrits à un événement
+  static Future<int> getEventRegistrationCount(String eventId) async {
+    final response = await client
+        .from('event_registrations')
+        .select()
+        .eq('event_id', eventId)
+        .count(CountOption.exact);
+    return response.count;
+  }
+
+  /// Inscrire un participant à un événement
+  static Future<void> registerForEvent({
+    required String eventId,
+    required String name,
+    required String email,
+    String? phone,
+  }) async {
+    await client.from('event_registrations').insert({
+      'event_id': eventId,
+      'name': name,
+      'email': email,
+      'phone': phone,
+    });
+  }
 }

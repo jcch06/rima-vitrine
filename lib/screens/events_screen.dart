@@ -8,6 +8,7 @@ import '../models/event.dart';
 import '../services/supabase_service.dart';
 import '../widgets/navbar.dart';
 import '../widgets/footer.dart';
+import '../widgets/event_registration_dialog.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -291,6 +292,34 @@ class _EventCard extends StatefulWidget {
 class _EventCardState extends State<_EventCard> {
   bool _isHovered = false;
   bool _descriptionExpanded = false;
+  int? _registrationCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRegistrationCount();
+  }
+
+  Future<void> _loadRegistrationCount() async {
+    if (widget.event.maxCapacity == null) return;
+    try {
+      final count =
+          await SupabaseService.getEventRegistrationCount(widget.event.id);
+      if (mounted) {
+        setState(() => _registrationCount = count);
+      }
+    } catch (_) {}
+  }
+
+  bool get _isFull =>
+      widget.event.maxCapacity != null &&
+      _registrationCount != null &&
+      _registrationCount! >= widget.event.maxCapacity!;
+
+  int? get _placesRestantes =>
+      (widget.event.maxCapacity != null && _registrationCount != null)
+          ? widget.event.maxCapacity! - _registrationCount!
+          : null;
 
   @override
   Widget build(BuildContext context) {
@@ -608,7 +637,12 @@ class _EventCardState extends State<_EventCard> {
         if (widget.event.location != null && widget.event.location!.isNotEmpty)
           _buildChip(Icons.location_on_outlined, widget.event.location!),
         if (widget.event.maxCapacity != null)
-          _buildChip(Icons.people_outline, '${widget.event.maxCapacity} places'),
+          _buildChip(
+            Icons.people_outline,
+            _placesRestantes != null
+                ? '$_placesRestantes / ${widget.event.maxCapacity} places'
+                : '${widget.event.maxCapacity} places',
+          ),
         _buildPriceChip(),
       ],
     );
@@ -682,35 +716,106 @@ class _EventCardState extends State<_EventCard> {
   }
 
   Widget _buildCtaButton() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(
-          color: SiteConfig.primaryColor.withOpacity(0.25),
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Plus d\'infos',
-            style: GoogleFonts.sourceSans3(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: SiteConfig.primaryColor,
-              letterSpacing: 0.5,
+    return Wrap(
+      spacing: 12,
+      runSpacing: 10,
+      children: [
+        if (_isFull)
+          // "Complet" badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+            decoration: BoxDecoration(
+              color: SiteConfig.textLight.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Complet',
+                  style: GoogleFonts.sourceSans3(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: SiteConfig.textLight,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.event_busy_rounded,
+                  size: 16,
+                  color: SiteConfig.textLight,
+                ),
+              ],
+            ),
+          )
+        else
+          // "S'inscrire" button
+          GestureDetector(
+            onTap: () => showEventRegistrationDialog(context, widget.event),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              decoration: BoxDecoration(
+                color: SiteConfig.primaryColor,
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'S\'inscrire',
+                    style: GoogleFonts.sourceSans3(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.how_to_reg_rounded,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          Icon(
-            Icons.arrow_forward_rounded,
-            size: 16,
-            color: SiteConfig.primaryColor,
+        // "Plus d'infos" button
+        GestureDetector(
+          onTap: () => context.go('/evenements/${widget.event.id}'),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(
+                color: SiteConfig.primaryColor.withOpacity(0.25),
+                width: 1.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Plus d\'infos',
+                  style: GoogleFonts.sourceSans3(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: SiteConfig.primaryColor,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 16,
+                  color: SiteConfig.primaryColor,
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

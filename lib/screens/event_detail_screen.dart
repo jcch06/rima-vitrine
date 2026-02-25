@@ -8,6 +8,7 @@ import '../models/event.dart';
 import '../services/supabase_service.dart';
 import '../widgets/navbar.dart';
 import '../widgets/footer.dart';
+import '../widgets/event_registration_dialog.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final String eventId;
@@ -21,6 +22,17 @@ class EventDetailScreen extends StatefulWidget {
 class _EventDetailScreenState extends State<EventDetailScreen> {
   Event? _event;
   bool _isLoading = true;
+  int? _registrationCount;
+
+  bool get _isFull =>
+      _event?.maxCapacity != null &&
+      _registrationCount != null &&
+      _registrationCount! >= _event!.maxCapacity!;
+
+  int? get _placesRestantes =>
+      (_event?.maxCapacity != null && _registrationCount != null)
+          ? _event!.maxCapacity! - _registrationCount!
+          : null;
 
   @override
   void initState() {
@@ -38,12 +50,25 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           _isLoading = false;
         });
       }
+      if (event != null && event.maxCapacity != null) {
+        _loadRegistrationCount(event.id);
+      }
     } catch (e) {
       debugPrint('[EVENT_DETAIL] Error loading event: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> _loadRegistrationCount(String eventId) async {
+    try {
+      final count =
+          await SupabaseService.getEventRegistrationCount(eventId);
+      if (mounted) {
+        setState(() => _registrationCount = count);
+      }
+    } catch (_) {}
   }
 
   @override
@@ -384,6 +409,34 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             ),
           ),
         ],
+
+        // Registration button
+        const SizedBox(height: 36),
+        _buildRegistrationButton(),
+      ],
+    );
+  }
+
+  Widget _buildRegistrationButton() {
+    if (_isFull) {
+      return _FullBadgeButton();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _RegisterButton(
+          onPressed: () => showEventRegistrationDialog(context, _event!),
+        ),
+        if (_placesRestantes != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            '$_placesRestantes place${_placesRestantes! > 1 ? 's' : ''} restante${_placesRestantes! > 1 ? 's' : ''}',
+            style: GoogleFonts.sourceSans3(
+              fontSize: 14,
+              color: SiteConfig.textSecondary,
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -506,8 +559,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           _DetailInfoCard(
             icon: Icons.people_outline,
             label: 'CAPACITÉ',
-            value: '${_event!.maxCapacity} places',
-            accentColor: SiteConfig.accentColor,
+            value: _placesRestantes != null
+                ? '$_placesRestantes / ${_event!.maxCapacity} places'
+                : '${_event!.maxCapacity} places',
+            accentColor: _isFull ? SiteConfig.textLight : SiteConfig.accentColor,
           ),
         ],
 
@@ -555,6 +610,118 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     } else {
       return 'Dans ${(diff.inDays / 30).floor()} mois';
     }
+  }
+}
+
+// ============================================
+// REGISTER BUTTON
+// ============================================
+
+class _RegisterButton extends StatefulWidget {
+  final VoidCallback onPressed;
+
+  const _RegisterButton({required this.onPressed});
+
+  @override
+  State<_RegisterButton> createState() => _RegisterButtonState();
+}
+
+class _RegisterButtonState extends State<_RegisterButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onPressed,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: _isHovered
+                  ? [SiteConfig.secondaryColor, SiteConfig.accentColor]
+                  : [
+                      SiteConfig.primaryColor,
+                      SiteConfig.primaryColor.withOpacity(0.9)
+                    ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: (_isHovered
+                        ? SiteConfig.secondaryColor
+                        : SiteConfig.primaryColor)
+                    .withOpacity(0.3),
+                blurRadius: _isHovered ? 20 : 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'S\'inscrire à cet événement',
+                style: GoogleFonts.sourceSans3(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(
+                Icons.how_to_reg_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================
+// FULL BADGE BUTTON (disabled state)
+// ============================================
+
+class _FullBadgeButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      decoration: BoxDecoration(
+        color: SiteConfig.textLight.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Complet',
+            style: GoogleFonts.sourceSans3(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: SiteConfig.textLight,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Icon(
+            Icons.event_busy_rounded,
+            color: SiteConfig.textLight,
+            size: 20,
+          ),
+        ],
+      ),
+    );
   }
 }
 
