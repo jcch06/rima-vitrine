@@ -636,7 +636,7 @@ class _ProductHighlightState extends State<_ProductHighlight> {
           Text(
             widget.subtitle,
             style: GoogleFonts.sourceSans3(
-              fontSize: 13,
+              fontSize: 14,
               color: SiteConfig.textLight,
             ),
             textAlign: TextAlign.center,
@@ -720,7 +720,7 @@ class _ValueCardState extends State<_ValueCard> {
             Text(
               widget.description,
               style: GoogleFonts.sourceSans3(
-                fontSize: 15,
+                fontSize: 16,
                 color: SiteConfig.textSecondary,
                 height: 1.6,
               ),

@@ -85,14 +85,19 @@ class Footer extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '© ${DateTime.now().year} ${SiteConfig.businessName}',
-                  style: GoogleFonts.sourceSans3(
-                    color: Colors.white54,
-                    fontSize: 13,
+                Flexible(
+                  child: Text(
+                    '© ${DateTime.now().year} ${SiteConfig.businessName}',
+                    style: GoogleFonts.sourceSans3(
+                      color: Colors.white54,
+                      fontSize: 13,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                const SizedBox(width: 16),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Propulsé par ',

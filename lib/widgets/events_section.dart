@@ -500,7 +500,7 @@ class _EventCardState extends State<_EventCard> {
           maxLines: _descriptionExpanded ? 100 : 3,
           overflow: _descriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
           style: GoogleFonts.sourceSans3(
-            fontSize: 15,
+            fontSize: 16,
             color: SiteConfig.textSecondary,
             height: 1.7,
           ),

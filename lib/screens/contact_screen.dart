@@ -97,7 +97,7 @@ class _ContactScreenState extends State<ContactScreen> {
           Text(
             SiteConfig.contactTitle,
             style: GoogleFonts.cormorantGaramond(
-              fontSize: isDesktop ? 52 : 36,
+              fontSize: isDesktop ? 52 : 32,
               fontWeight: FontWeight.w500,
               color: SiteConfig.textColor,
             ),
@@ -344,13 +344,16 @@ class _ContactScreenState extends State<ContactScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  SiteConfig.address,
-                  style: GoogleFonts.sourceSans3(
-                    fontSize: 16,
-                    color: SiteConfig.textSecondary,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    SiteConfig.address,
+                    style: GoogleFonts.sourceSans3(
+                      fontSize: 16,
+                      color: SiteConfig.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 TextButton.icon(
@@ -655,18 +658,10 @@ class _SubmitButtonState extends State<_SubmitButton> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        transform: Matrix4.translationValues(
-                          _isHovered ? 4 : 0,
-                          0,
-                          0,
-                        ),
-                        child: const Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
-                          size: 20,
-                        ),
+                      const Icon(
+                        Icons.send_rounded,
+                        color: Colors.white,
+                        size: 20,
                       ),
                     ],
                   ),

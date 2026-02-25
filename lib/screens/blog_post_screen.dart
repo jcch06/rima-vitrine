@@ -106,7 +106,7 @@ class _BlogPostScreenState extends State<BlogPostScreen> {
                       Text(
                         _post!.title,
                         style: TextStyle(
-                          fontSize: isDesktop ? 42 : 32,
+                          fontSize: isDesktop ? 42 : 28,
                           fontWeight: FontWeight.bold,
                           color: SiteConfig.textColor,
                         ),

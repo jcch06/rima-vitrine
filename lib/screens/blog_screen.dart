@@ -117,7 +117,7 @@ class _BlogScreenState extends State<BlogScreen> {
           Text(
             SiteConfig.blogTitle,
             style: GoogleFonts.cormorantGaramond(
-              fontSize: isDesktop ? 52 : 36,
+              fontSize: isDesktop ? 52 : 32,
               fontWeight: FontWeight.w500,
               color: SiteConfig.textColor,
             ),
@@ -228,14 +228,28 @@ class _BlogScreenState extends State<BlogScreen> {
   }
 
   Widget _buildPostsGrid(bool isDesktop) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600 && screenWidth <= 900;
+
+    int crossAxisCount = 1;
+    double childAspectRatio = 1.1;
+
+    if (isDesktop) {
+      crossAxisCount = 3;
+      childAspectRatio = 0.75;
+    } else if (isTablet) {
+      crossAxisCount = 2;
+      childAspectRatio = 0.85;
+    }
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: isDesktop ? 3 : 1,
+        crossAxisCount: crossAxisCount,
         crossAxisSpacing: 32,
         mainAxisSpacing: 32,
-        childAspectRatio: isDesktop ? 0.75 : 1.1,
+        childAspectRatio: childAspectRatio,
       ),
       itemCount: _posts.length,
       itemBuilder: (_, index) => _BlogCard(
@@ -257,170 +271,126 @@ class _BlogCard extends StatefulWidget {
 }
 
 class _BlogCardState extends State<_BlogCard> {
-  bool _isHovered = false;
-
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: () => context.go('/blog/${widget.post.slug}'),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOutCubic,
-          transform: Matrix4.identity()
-            ..translate(0.0, _isHovered ? -8.0 : 0.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: SiteConfig.primaryColor
-                    .withOpacity(_isHovered ? 0.15 : 0.06),
-                blurRadius: _isHovered ? 40 : 24,
-                offset: Offset(0, _isHovered ? 16 : 8),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image
-              Expanded(
-                flex: 3,
-                child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(24)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      widget.post.featuredImage != null
-                          ? Image.network(
-                              widget.post.featuredImage!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                            )
-                          : _buildPlaceholder(),
-                      // Overlay gradient
-                      Positioned.fill(
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
+    return GestureDetector(
+      onTap: () => context.go('/blog/${widget.post.slug}'),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: SiteConfig.primaryColor.withOpacity(0.08),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image
+            Expanded(
+              flex: 3,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    widget.post.featuredImage != null
+                        ? Image.network(
+                            widget.post.featuredImage!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                          )
+                        : _buildPlaceholder(),
+                    // Category badge
+                    if (widget.post.category != null)
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black
-                                    .withOpacity(_isHovered ? 0.3 : 0.1),
-                              ],
-                            ),
+                            color: Colors.white.withOpacity(0.95),
+                            borderRadius: BorderRadius.circular(100),
                           ),
-                        ),
-                      ),
-                      // Category badge
-                      if (widget.post.category != null)
-                        Positioned(
-                          top: 16,
-                          left: 16,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.95),
-                              borderRadius: BorderRadius.circular(100),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              widget.post.category!,
-                              style: GoogleFonts.sourceSans3(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: SiteConfig.primaryColor,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              // Content
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.post.title,
-                        style: GoogleFonts.cormorantGaramond(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: SiteConfig.textColor,
-                          height: 1.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 12),
-                      if (widget.post.excerpt != null)
-                        Expanded(
                           child: Text(
-                            widget.post.excerpt!,
+                            widget.post.category!,
                             style: GoogleFonts.sourceSans3(
-                              fontSize: 14,
-                              color: SiteConfig.textSecondary,
-                              height: 1.5,
-                            ),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      const Spacer(),
-                      // Read more link
-                      Row(
-                        children: [
-                          Text(
-                            'Lire la recette',
-                            style: GoogleFonts.sourceSans3(
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: SiteConfig.primaryColor,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            transform: Matrix4.translationValues(
-                              _isHovered ? 4 : 0,
-                              0,
-                              0,
-                            ),
-                            child: Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 18,
-                              color: SiteConfig.primaryColor,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            // Content
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.post.title,
+                      style: GoogleFonts.cormorantGaramond(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                        color: SiteConfig.textColor,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 12),
+                    if (widget.post.excerpt != null)
+                      Expanded(
+                        child: Text(
+                          widget.post.excerpt!,
+                          style: GoogleFonts.sourceSans3(
+                            fontSize: 14,
+                            color: SiteConfig.textSecondary,
+                            height: 1.5,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    const Spacer(),
+                    // Read more link
+                    Row(
+                      children: [
+                        Text(
+                          'Lire la recette',
+                          style: GoogleFonts.sourceSans3(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: SiteConfig.primaryColor,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 18,
+                          color: SiteConfig.primaryColor,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

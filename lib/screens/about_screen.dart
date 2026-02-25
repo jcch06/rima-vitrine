@@ -68,7 +68,7 @@ class AboutScreen extends StatelessWidget {
           Text(
             SiteConfig.aboutSubtitle,
             style: GoogleFonts.cormorantGaramond(
-              fontSize: isDesktop ? 52 : 36,
+              fontSize: isDesktop ? 52 : 32,
               fontWeight: FontWeight.w500,
               color: SiteConfig.textColor,
               height: 1.2,
@@ -282,10 +282,11 @@ class AboutScreen extends StatelessWidget {
           Text(
             'Ce qui nous définit',
             style: GoogleFonts.cormorantGaramond(
-              fontSize: isDesktop ? 42 : 32,
+              fontSize: isDesktop ? 42 : 28,
               fontWeight: FontWeight.w500,
               color: SiteConfig.textColor,
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 60),
           Wrap(
@@ -349,10 +350,11 @@ class AboutScreen extends StatelessWidget {
           Text(
             'Les étapes de notre aventure',
             style: GoogleFonts.cormorantGaramond(
-              fontSize: isDesktop ? 42 : 32,
+              fontSize: isDesktop ? 42 : 28,
               fontWeight: FontWeight.w500,
               color: SiteConfig.textColor,
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 60),
           _TimelineItem(
@@ -412,64 +414,48 @@ class _ValueCard extends StatefulWidget {
 }
 
 class _ValueCardState extends State<_ValueCard> {
-  bool _isHovered = false;
-
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: widget.isDesktop ? 260 : double.infinity,
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(_isHovered ? 0.08 : 0.03),
-              blurRadius: _isHovered ? 30 : 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-          border: Border.all(
-            color: _isHovered
-                ? SiteConfig.primaryColor.withOpacity(0.2)
-                : Colors.transparent,
+    return Container(
+      width: widget.isDesktop ? 260 : 280,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-        ),
-        child: Column(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              transform: Matrix4.identity()..scale(_isHovered ? 1.1 : 1.0),
-              child: Text(
-                widget.icon,
-                style: TextStyle(fontSize: 48),
-              ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            widget.icon,
+            style: const TextStyle(fontSize: 48),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            widget.title,
+            style: GoogleFonts.cormorantGaramond(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: SiteConfig.textColor,
             ),
-            const SizedBox(height: 20),
-            Text(
-              widget.title,
-              style: GoogleFonts.cormorantGaramond(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                color: SiteConfig.textColor,
-              ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            widget.description,
+            style: GoogleFonts.sourceSans3(
+              fontSize: 16,
+              color: SiteConfig.textSecondary,
+              height: 1.6,
             ),
-            const SizedBox(height: 12),
-            Text(
-              widget.description,
-              style: GoogleFonts.sourceSans3(
-                fontSize: 15,
-                color: SiteConfig.textSecondary,
-                height: 1.6,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -614,7 +600,7 @@ class _TimelineItem extends StatelessWidget {
           Text(
             description,
             style: GoogleFonts.sourceSans3(
-              fontSize: 15,
+              fontSize: 16,
               color: SiteConfig.textSecondary,
               height: 1.6,
             ),

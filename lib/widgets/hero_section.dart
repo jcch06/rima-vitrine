@@ -50,7 +50,10 @@ class HeroSection extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () => launchUrl(Uri.parse(SiteConfig.storeUrl)),
+                onPressed: () => launchUrl(
+                  Uri.parse(SiteConfig.storeUrl),
+                  webOnlyWindowName: '_self',
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: SiteConfig.primaryColor,
                   foregroundColor: Colors.white,

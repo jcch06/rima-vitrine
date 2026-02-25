@@ -14,11 +14,12 @@ class Navbar extends StatefulWidget {
 }
 
 class _NavbarState extends State<Navbar> {
-  bool _isHovered = false;
-
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 900;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 1100;
+    final isTablet = screenWidth > 600 && screenWidth <= 1100;
+    final isSmallMobile = screenWidth < 400;
     final bgColor = widget.transparent
         ? Colors.transparent
         : SiteConfig.surfaceColor.withOpacity(0.95);
@@ -26,8 +27,8 @@ class _NavbarState extends State<Navbar> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: EdgeInsets.symmetric(
-        horizontal: isDesktop ? 60 : 20,
-        vertical: 20,
+        horizontal: isDesktop ? 60 : (isTablet ? 30 : 16),
+        vertical: 16,
       ),
       decoration: BoxDecoration(
         color: bgColor,
@@ -42,78 +43,35 @@ class _NavbarState extends State<Navbar> {
       ),
       child: Row(
         children: [
-          // Logo avec animation
-          MouseRegion(
-            onEnter: (_) => setState(() => _isHovered = true),
-            onExit: (_) => setState(() => _isHovered = false),
-            child: GestureDetector(
-              onTap: () => context.go('/'),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                transform: Matrix4.identity()..scale(_isHovered ? 1.02 : 1.0),
-                child: Row(
-                  children: [
-                    // Icône cèdre stylisée
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            SiteConfig.primaryColor,
-                            SiteConfig.primaryColor.withOpacity(0.8),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: SiteConfig.primaryColor.withOpacity(0.2),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          '🌿',
-                          style: TextStyle(fontSize: 22),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          SiteConfig.businessName,
-                          style: GoogleFonts.cormorantGaramond(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: widget.transparent
-                                ? Colors.white
-                                : SiteConfig.textColor,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        Text(
-                          'Épicerie Fine Libanaise',
-                          style: GoogleFonts.sourceSans3(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: widget.transparent
-                                ? Colors.white70
-                                : SiteConfig.textLight,
-                            letterSpacing: 2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+          // Logo
+          GestureDetector(
+            onTap: () => context.go('/'),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: SiteConfig.primaryColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Center(
+                    child: Text('🌿', style: TextStyle(fontSize: 20)),
+                  ),
                 ),
-              ),
+                if (!isSmallMobile) ...[
+                  const SizedBox(width: 10),
+                  Text(
+                    SiteConfig.businessName,
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: isDesktop ? 20 : 17,
+                      fontWeight: FontWeight.w700,
+                      color: widget.transparent ? Colors.white : SiteConfig.textColor,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
 
@@ -131,7 +89,7 @@ class _NavbarState extends State<Navbar> {
               transparent: widget.transparent,
             ),
             _NavLink(
-              label: 'Carnet de Saveurs',
+              label: 'Blog',
               path: '/blog',
               transparent: widget.transparent,
             ),
@@ -140,14 +98,19 @@ class _NavbarState extends State<Navbar> {
               path: '/contact',
               transparent: widget.transparent,
             ),
-            const SizedBox(width: 32),
-          ],
-
-          // Bouton Commander avec effet hover
-          _OrderButton(transparent: widget.transparent),
-
-          if (!isDesktop) ...[
-            const SizedBox(width: 12),
+            const SizedBox(width: 24),
+            _OrderButton(
+              transparent: widget.transparent,
+              compact: false,
+              iconOnly: false,
+            ),
+          ] else ...[
+            _OrderButton(
+              transparent: widget.transparent,
+              compact: isTablet,
+              iconOnly: isSmallMobile,
+            ),
+            const SizedBox(width: 8),
             _MobileMenuButton(transparent: widget.transparent),
           ],
         ],
@@ -222,8 +185,10 @@ class _NavLinkState extends State<_NavLink> {
 
 class _OrderButton extends StatefulWidget {
   final bool transparent;
+  final bool compact;
+  final bool iconOnly;
 
-  const _OrderButton({this.transparent = false});
+  const _OrderButton({this.transparent = false, this.compact = false, this.iconOnly = false});
 
   @override
   State<_OrderButton> createState() => _OrderButtonState();
@@ -238,10 +203,16 @@ class _OrderButtonState extends State<_OrderButton> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
-        onTap: () => launchUrl(Uri.parse(SiteConfig.storeUrl)),
+        onTap: () => launchUrl(
+          Uri.parse(SiteConfig.storeUrl),
+          webOnlyWindowName: '_self',
+        ),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+          padding: EdgeInsets.symmetric(
+            horizontal: widget.iconOnly ? 14 : (widget.compact ? 20 : 28),
+            vertical: widget.iconOnly ? 14 : (widget.compact ? 12 : 14),
+          ),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -266,30 +237,31 @@ class _OrderButtonState extends State<_OrderButton> {
               ),
             ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Découvrir la boutique',
-                style: GoogleFonts.sourceSans3(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+          child: widget.iconOnly
+              ? const Icon(
+                  Icons.storefront_rounded,
                   color: Colors.white,
-                  letterSpacing: 0.5,
+                  size: 20,
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.compact ? 'Boutique' : 'Boutique en ligne',
+                      style: GoogleFonts.sourceSans3(
+                        fontSize: widget.compact ? 13 : 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                transform: Matrix4.translationValues(_isHovered ? 4 : 0, 0, 0),
-                child: const Icon(
-                  Icons.arrow_forward_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -375,7 +347,10 @@ class _MobileMenuButton extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  launchUrl(Uri.parse(SiteConfig.storeUrl));
+                  launchUrl(
+                    Uri.parse(SiteConfig.storeUrl),
+                    webOnlyWindowName: '_self',
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: SiteConfig.primaryColor,
